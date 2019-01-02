@@ -11,20 +11,22 @@
 struct task_t{
   uint8_t id;
   uint8_t dirbits;
-  uint16_t err[NAXIS];
-  uint16_t step[NAXIS]; // axis
-  uint16_t time; //time
-  uint16_t rate;
-  uint16_t steps; //step_count
-  uint16_t steps_acc;
-  uint16_t steps_dec;
+  int16_t err[NAXIS];
+  int16_t step[NAXIS]; // axis
+  int16_t time; //time
+  int16_t steps; //step_count
+  int16_t steps_acc;
+  int16_t steps_dec;
   };
 
 
 void stepper_init();
-void tasks_execute();
 void stepper_stop();
 
+
+task_t* task_reserve_cell();
+void task_apply(task_t* t);
+void tasks_execute();
 
 
 #define stepper_h

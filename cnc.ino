@@ -4,12 +4,14 @@
 #include "protocol.h"
 #include "stepper.h"
 
+
 void setup(){
   serial_init();
   stepper_init();
-  }
-  
+  }//setup
+
+
 void loop(){
   //sleep_mode();
   protocol_process_input();
-  }
+  }//loop

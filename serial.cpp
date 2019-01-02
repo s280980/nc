@@ -81,3 +81,49 @@ ISR(USART_UDRE_vect)
   if (tail == tx_buffer_head) { UCSR0B &= ~(1 << UDRIE0); }
 }
 #endif
+
+
+#ifdef SERIAL_PRINT
+
+void serial_print(char *s){
+  while(*s){
+    serial_write(*s);
+    s++;
+    }
+  }
+
+
+void serial_println(char *s){
+  while(*s){
+    serial_write(*s);
+    s++;
+    }
+  serial_write((uint8_t)13);
+  serial_write((uint8_t)10);  
+  }
+
+void serial_println(uint32_t n){ 
+  if (n == 0) {
+    serial_write('0');
+    serial_write((uint8_t)13);
+    serial_write((uint8_t)10);
+    return;
+  } 
+
+  unsigned char buf[10]; 
+  uint8_t i = 0;  
+  
+  while (n > 0) {
+    buf[i++] = n % 10;
+    n /= 10;
+  }
+    
+  for (; i > 0; i--)
+    serial_write('0' + buf[i-1]);
+    
+  serial_write((uint8_t)13);
+  serial_write((uint8_t)10);    
+  }//void
+
+
+#endif //SERIAL_PRINT

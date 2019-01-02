@@ -2,6 +2,7 @@
 #include <avr/interrupt.h>
 #include "config.h"
 #include "stepper.h"
+#include "serial.h"
 
 
 struct stepper_params_t{
@@ -27,6 +28,20 @@ uint8_t task_head=0;
 volatile uint8_t task_tail=0;
 
 
+task_t* task_reserve_cell(){
+  uint8_t head = task_head+1;
+  head%=TASK_BUFFER_SIZE;
+  if(head!=task_tail){return &tasks[head];}else{return 0;}
+  }//task_t* ..()
+
+
+void task_apply(task_t* t){
+  uint8_t head = task_head+1;
+  head%=TASK_BUFFER_SIZE;
+  if(&tasks[head]==t){task_head = head;}
+  }
+
+
 inline stepper_stepbits_update(){
   st_stepbits=0;
   uint8_t bt;
@@ -36,7 +51,7 @@ inline stepper_stepbits_update(){
       task->err[ax]-=task->time;
       bt=(1<<ax);
       st_stepbits|=bt;
-      if(task->dirbits&bt){st_position[ax]++;}else{st_position[ax]--;}
+      if(task->dirbits&bt){st_position[ax]--;}else{st_position[ax]++;}
       }//if
     }//for  
   st_stepbits ^= params.stepbits_invert_mask;
@@ -151,6 +166,9 @@ void stepper_init(){
   TCCR2B = 1<<CS20; // Full speed, no prescaler
   TIMSK2 |= (1<<TOIE2); //enable  TIMER2_OVF_vect
 
+
+  params.st_inv_acc = 100;
+  params.rate_min = 50;
   }//stepper_init
 
 
