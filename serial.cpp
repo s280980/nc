@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <avr/interrupt.h>
+#include "config.h"
 #include "serial.h"
 
 uint8_t rx_buffer[SERIAL_RX_BUFFER_SIZE];
