@@ -138,17 +138,18 @@ void stepper_init(){
   DIRECTION_DDR |= DIRECTION_MASK;
 
   // Configure Timer 1: Stepper Driver Interrupt
-  TCCR1B &= ~(1<<WGM13); // waveform generation = 0100 = CTC
-  TCCR1B |=  (1<<WGM12);
-  TCCR1A &= ~((1<<WGM11) | (1<<WGM10)); 
-  TCCR1A &= ~((1<<COM1A1) | (1<<COM1A0) | (1<<COM1B1) | (1<<COM1B0)); // Disconnect OC1 output
-  // TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Set in st_go_idle().
-  // TIMSK1 &= ~(1<<OCIE1A);  // Set in st_go_idle().
+  TIMSK1 &= ~(1 << OCIE1A);
+  TCCR1A = 0;
+  TCCR1B = 0;  
+  OCR1A = 62500;
+  TCCR1B |= (1<<WGM12);
+  TCCR1B = (TCCR1B & ~(0x07<<CS10)) | (3<<CS10);
   
   // Configure Timer 2
+  TIMSK2 = 0; // All interrupts disabled
   TCCR2A = 0; // Normal operation  
   TCCR2B = 1<<CS20; // Full speed, no prescaler
-  TIMSK2 = 0; // All interrupts disabled
+  TIMSK2 |= (1<<TOIE2); //enable  TIMER2_OVF_vect
 
   }//stepper_init
 
