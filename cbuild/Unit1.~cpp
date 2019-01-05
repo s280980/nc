@@ -22,16 +22,18 @@ void __fastcall TForm1::FormCreate(TObject *Sender)
 //---------------------------------------------------------------------------
 void __fastcall TForm1::FormShow(TObject *Sender)
 {
-  uint8_t numPort = 4;
+  uint8_t numPort = 8;
   StatusBar1->Panels->Items[0]->Text = "COM"+String(numPort);
 
   if(port && (port->handle==0)){
 
-    if(port->Open(numPort,500000)>0){
+    if(port->Open(numPort,115200)>0){
       StatusBar1->Panels->Items[1]->Text = "OPEN";
-      Application->ProcessMessages();
+      for(int i=0; i<1000; i++){ Application->ProcessMessages(); }
       port->Write( CMD_RESET );
-
+      port->Write( CMD_LINK );
+      //port->task_running_state__rep_dt_set(1000);
+      port->stepper_position__rep_dt_set(1000);
     }
     else{
       StatusBar1->Panels->Items[1]->Text = "CLOSE";
@@ -58,7 +60,10 @@ void __fastcall TForm1::FormCloseQuery(TObject *Sender, bool &CanClose)
   CanClose = fClose;
   Timer1->Enabled = true;
   if(!fClose){
-    if(port){port->Write( CMD_RESET ); }
+    if(port){
+    port->Write( CMD_RESET );
+    port->stepper_position__rep_dt_set(0);
+    }
   }
 }
 //---------------------------------------------------------------------------
@@ -104,5 +109,10 @@ void __fastcall TForm1::Edit2Change(TObject *Sender)
 
 }
 //---------------------------------------------------------------------------
+
+
+
+
+
 
 

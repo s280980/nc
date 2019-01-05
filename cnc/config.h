@@ -1,4 +1,4 @@
-#define SERIAL_RATE 500000 //or low rate = 115200
+#define SERIAL_RATE 115200 //or max rate = 2000000 boud
 #if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega2560__)
   #define SERIAL_RX_BUFFER_SIZE 512
 #else
@@ -9,6 +9,10 @@
 #define PROTOCOL_RX_BUFFER_SIZE 64
 #define TICKS_PER_MICROSECOND ( F_CPU / 1000000 )
 #define TASK_BUFFER_SIZE 10
+
+#define TMR_REP_ST_POSITION 0
+#define TMR_REP_TASK_RUNNING_STATE 1
+#define TMR_COUNT 2
 
 #if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega2560__)
   #define NAXIS 8

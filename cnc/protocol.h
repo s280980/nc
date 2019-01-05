@@ -2,12 +2,16 @@
 
 
 //pc-->nc
-#define CMD_TASK 128
-#define CMD__FREP__TASK_RUNNING_STATE__MSTIME 135
+#define CMD_LINK 128
+#define CMD_RESET 134
+#define CMD_TASK_RUNNING_STATE_REP_DT_SET 135
+#define CMD_STEPPER_POSITION_REP_DT_SET 136
+#define CMD_TASK 137
 
 
 //nc-->pc
 #define CMD_TASK_RUNNING_STATE 135
+#define CMD_STEPPER_POSITION 136
 
 
 void protocol_process_input();

@@ -8,7 +8,7 @@
 
 
 static stepper_params_t params;  
-
+uint32_t tmr_time[TMR_COUNT];
 
 volatile uint16_t st_rate;
 static volatile uint16_t st_rate_start;
@@ -25,14 +25,37 @@ uint8_t task_head=0;
 volatile uint8_t task_tail=0;
 
 
+uint32_t rep_st_position[NAXIS];
+void report_stepper_position(uint32_t ms_time){
+  if(!params.tmr_dt[0]){return; }
+  if(ms_time >= tmr_time[0] + params.tmr_dt[0]){
+    uint8_t data;
+    tmr_time[0] = ms_time;
+    for(uint8_t ax=0; ax<NAXIS; ax++){
+      if(rep_st_position[ax] != st_position[ax]){
+        rep_st_position[ax] = st_position[ax];
+        serial_write( CMD_STEPPER_POSITION );
+        data = rep_st_position[ax]>>28;
+        data |= (ax<<4);
+        serial_write( data &127 );
+        serial_write( (rep_st_position[ax]>>21) &127 );
+        serial_write( (rep_st_position[ax]>>14) &127 );
+        serial_write( (rep_st_position[ax]>>7) &127 );
+        serial_write( rep_st_position[ax] &127 );
+        }
+      }
+    }
+  }//void
+
+
 uint8_t rep_task_id;
 int16_t rep_task_steps;
-void task_running_state(uint32_t ms_time){
-  if(!params.frep__task_running_state__dt){ return; }
+void report_task_running_state(uint32_t ms_time){
+  if(!params.tmr_dt[TMR_REP_ST_POSITION]){ tmr_time[TMR_REP_ST_POSITION]=ms_time; return; }
   task_t *t;
   t=task;
-  if(t && (ms_time - params.frep__task_running_state__t >= params.frep__task_running_state__dt)){
-    params.frep__task_running_state__t = ms_time;
+  if(t && (ms_time - tmr_time[TMR_REP_ST_POSITION] >= params.tmr_dt[TMR_REP_ST_POSITION])){
+    tmr_time[TMR_REP_ST_POSITION] = ms_time;
     if((t->id!=rep_task_id)||(t->steps!=rep_task_steps)){
       rep_task_id = t->id;
       rep_task_steps = t->steps;
@@ -106,21 +129,22 @@ void stepper_start(){
 
 inline stepper_ocr1a_update(){
   //math rate...
-  if((task->steps>task->steps_acc) && (st_rate<task->rate)){
-    if(st_mode!=ST_MODE_ACC){st_time=0; st_rate_start = st_rate; st_mode=ST_MODE_ACC;}
-    st_time += st_dtime;
-    st_rate = st_rate_start + st_time / params.st_inv_acc;
-    st_dtime = 250000 / st_rate;
-    OCR1A = st_dtime;
-    }
-  else if(task->steps<task->steps_dec){
+  if(task->steps<task->steps_dec){
     if(st_mode!=ST_MODE_DEC){st_time=0; st_rate_start = st_rate; st_mode=ST_MODE_DEC;}
     st_time += st_dtime;
     uint16_t tmp = st_time / params.st_inv_acc;
     if(st_rate_start-4>=tmp){st_rate = st_rate_start - tmp;}else{st_rate = 4;}
     st_dtime = 250000 / st_rate;
     OCR1A = st_dtime;
-    }else{
+    }
+  else if(st_rate<task->rate){
+    if(st_mode!=ST_MODE_ACC){st_time=0; st_rate_start = st_rate; st_mode=ST_MODE_ACC;}
+    st_time += st_dtime;
+    st_rate = st_rate_start + st_time / params.st_inv_acc;
+    st_dtime = 250000 / st_rate;
+    OCR1A = st_dtime;
+    }
+  else{
       if(st_mode!=ST_MODE_CRUISE){
         st_mode=ST_MODE_CRUISE;
         st_dtime = 250000 / st_rate;
@@ -187,6 +211,8 @@ void stepper_init(){
 
   params.st_inv_acc = 100;
   params.rate_min = 50;
+  st_position[3]=17547;
+  st_position[1]=3452175477;
   }//stepper_init
 
 

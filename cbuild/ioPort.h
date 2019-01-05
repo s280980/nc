@@ -10,15 +10,19 @@
 #define EBUFSIZE 4096
 #define PROTOCOL_RX_BUFFER_SIZE 256
 //---------------------------------------------------------------------------
-#define NAXIS 6
+#define NAXIS 8
 //---------------------------------------------------------------------------
 //pc-->nc
-#define CMD_TASK 128
-#define CMD__FREP__TASK_RUNNING_STATE__MSTIME 135
-#define CMD_RESET 136
+#define CMD_LINK 128
+#define CMD_RESET 134
+#define CMD_TASK_RUNNING_STATE_REP_DT_SET 135
+#define CMD_STEPPER_POSITION_REP_DT_SET 136
+#define CMD_TASK 137
+
 
 //nc-->pc
 #define CMD_TASK_RUNNING_STATE 135
+#define CMD_STEPPER_POSITION 136
 
 
 //---------------------------------------------------------------------------
@@ -34,7 +38,6 @@ struct task_t{
   int16_t step[NAXIS]; // axis
   int16_t time; //time
   int16_t steps; //step_count
-  int16_t steps_acc;
   int16_t steps_dec;
   uint16_t rate;
   uint8_t enable;
@@ -95,8 +98,12 @@ public:
         uint8_t task_tail;
         uint32_t stepper_position[8];
 
-        void __fastcall task_running_state__report_dtime_set(uint16_t ms);
-
+        void __fastcall on_link();
+        void __fastcall task_running_state__rep_dt_set(uint16_t ms);
+        void __fastcall on_stepper_position();
+        void __fastcall on_task_running_state();
+        void __fastcall stepper_position__rep_dt_set(uint16_t ms);
+        void __fastcall task_send(task_t * task);
 
 
 };

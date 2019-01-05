@@ -8,7 +8,7 @@
 void setup(){
   serial_init();
   stepper_init();
-  params.frep__task_running_state__dt = 1000;  
+  //params.tmr_dt[TMR_REP_ST_POSITION]=1000;
   }//setup
 
 
@@ -16,5 +16,6 @@ void setup(){
 void loop(){
   //sleep_mode();
   protocol_process_input();
-  task_running_state(millis());
+  //report_task_running_state(millis());
+  report_stepper_position(millis());
   }//loop

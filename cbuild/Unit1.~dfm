@@ -27,15 +27,15 @@ object Form1: TForm1
   end
   object StatusBar1: TStatusBar
     Left = 0
-    Top = 400
+    Top = 397
     Width = 618
-    Height = 22
+    Height = 25
     Panels = <
       item
-        Width = 50
+        Width = 60
       end
       item
-        Width = 50
+        Width = 60
       end
       item
         Width = 50
@@ -59,7 +59,7 @@ object Form1: TForm1
   end
   object Memo1: TMemo
     Left = 0
-    Top = 183
+    Top = 180
     Width = 618
     Height = 217
     Align = alBottom
@@ -82,38 +82,14 @@ object Form1: TForm1
     TabOrder = 2
     OnClick = Button1Click
   end
-  object Button2: TButton
-    Left = 207
-    Top = 39
-    Width = 92
-    Height = 31
-    Caption = 'Button2'
-    TabOrder = 3
-  end
   object Edit2: TEdit
     Left = 374
     Top = 89
     Width = 90
     Height = 24
-    TabOrder = 4
+    TabOrder = 3
     Text = '4'
     OnChange = Edit2Change
-  end
-  object Button5: TButton
-    Left = 177
-    Top = 128
-    Width = 93
-    Height = 31
-    Caption = 'axPosCheck'
-    TabOrder = 5
-  end
-  object Edit3: TEdit
-    Left = 128
-    Top = 128
-    Width = 41
-    Height = 24
-    TabOrder = 6
-    Text = '4'
   end
   object MainMenu1: TMainMenu
     Left = 8
@@ -125,9 +101,6 @@ object Form1: TForm1
       end
       object ARDUINO1: TMenuItem
         Caption = 'CNC'
-        object PMC1: TMenuItem
-          Caption = #1094#1077#1087#1085#1072#1103' '#1089#1093#1077#1084#1072
-        end
       end
     end
     object N2: TMenuItem

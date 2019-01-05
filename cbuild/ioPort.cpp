@@ -137,15 +137,63 @@ void __fastcall ComPortThread::Write(uint8_t data)
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-
 //---------------------------------------------------------------------------
-
 //---------------------------------------------------------------------------
-
 //---------------------------------------------------------------------------
-void __fastcall ComPortThread::task_running_state__report_dtime_set(uint16_t ms)
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::task_send(task_t * task)
 {
-  Write(CMD__FREP__TASK_RUNNING_STATE__MSTIME);
+  Write( CMD_TASK );
+  Write( (task->id>>1) &127 );
+  Write( ((task->id<<6) ) &127 );
+  //Write(  );
+  //Write(  );
+  //Write(  );
+  //Write(  );
+  //Write(  );
+  //Write(  );
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::on_link()
+{
+Form1->Memo1->Lines->Add("link()");
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::stepper_position__rep_dt_set(uint16_t ms)
+{
+  Write( CMD_STEPPER_POSITION_REP_DT_SET );
+  Write((uint8_t)(ms>>7)&127);
+  Write((uint8_t)ms&127);
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::on_task_running_state()
+{
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::on_stepper_position()
+{
+  uint8_t ax =  pr_buffer[0]>>4;
+  uint32_t ps = pr_buffer[4];
+  ps |= ((uint32_t)pr_buffer[3])<<7;
+  ps |= ((uint32_t)pr_buffer[2])<<14;
+  ps |= ((uint32_t)pr_buffer[1])<<21;
+  ps |= ((uint32_t)pr_buffer[0])<<28;
+  //stepper_position[ax] = ps;
+  Form1->Memo1->Lines->Add("ps["+String(ax)+"]="+String(ps));
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::task_running_state__rep_dt_set(uint16_t ms)
+{
+  Write(CMD_TASK_RUNNING_STATE_REP_DT_SET);
   Write((ms>>7)&127);
   Write(ms&127);
 }
@@ -159,7 +207,9 @@ void __fastcall ComPortThread::Execute()
       pr_command = data;
       pr_bytes_wait = pr_bytes_read = 0;
       switch(pr_command){
-
+        case CMD_STEPPER_POSITION:{pr_bytes_wait=5;}break;
+        case CMD_TASK_RUNNING_STATE:{pr_bytes_wait=4;}break;
+        case CMD_LINK:{on_link();}break;
 
       }//switch
     }//if cmd
@@ -168,16 +218,15 @@ void __fastcall ComPortThread::Execute()
       pr_bytes_wait--;
       if(pr_bytes_wait==0){
         switch(pr_command){
-
+          case CMD_STEPPER_POSITION:{on_stepper_position();}break;
+          case CMD_TASK_RUNNING_STATE:{on_task_running_state();}break;
 
         }//switch
       }//if wait==0
     }//if wait..
 
   }//while
-
-
-
+  FreeOnTerminate = true;
 }
 //---------------------------------------------------------------------------
 

@@ -22,7 +22,6 @@ __published:	// IDE-managed Components
         TMenuItem *N1;
         TMenuItem *PC1;
         TMenuItem *ARDUINO1;
-        TMenuItem *PMC1;
         TMenuItem *N2;
         TMenuItem *HOME1;
         TMenuItem *EDIT1;
@@ -31,11 +30,8 @@ __published:	// IDE-managed Components
         TMenuItem *AUTO1;
         TTimer *Timer1;
         TButton *Button1;
-        TButton *Button2;
         TEdit *Edit2;
         TLabel *Label1;
-        TButton *Button5;
-        TEdit *Edit3;
         void __fastcall FormCreate(TObject *Sender);
         void __fastcall FormShow(TObject *Sender);
         void __fastcall FormClose(TObject *Sender, TCloseAction &Action);

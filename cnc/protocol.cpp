@@ -11,6 +11,10 @@ uint16_t pr_command = 0;
 uint8_t pr_bytes_wait = 0;
 
 
+void on_reset(){
+  }
+
+
 void protocol_process_input(){
   if(serial()){
     uint8_t data = serial_read();
@@ -18,8 +22,11 @@ void protocol_process_input(){
       pr_command = data;
       pr_bytes_wait = pr_bytes_read = 0;
       switch(pr_command){
-        case CMD_TASK:{/*pr_bytes_wait=;*/}break;
-        case CMD__FREP__TASK_RUNNING_STATE__MSTIME:{pr_bytes_wait=2;}break;
+        case CMD_LINK:{serial_write(CMD_LINK);}break;
+        case CMD_STEPPER_POSITION_REP_DT_SET:
+        case CMD_TASK_RUNNING_STATE_REP_DT_SET:{pr_bytes_wait=2;}break;
+        case CMD_RESET:{on_reset();}break;
+        //case CMD_TASK:{pr_bytes_wait=}break;
         
         }//switch
       }
@@ -28,10 +35,11 @@ void protocol_process_input(){
       pr_bytes_wait--;
       if(pr_bytes_wait==0){
         switch(pr_command){
-          case CMD_TASK:{}break;
-          case CMD__FREP__TASK_RUNNING_STATE__MSTIME:{ params.frep__task_running_state__dt = (((uint16_t)pr_buffer[1])<<7) || pr_buffer[0]; }break;
+          //case CMD_TASK:{}break;
+          case CMD_TASK_RUNNING_STATE_REP_DT_SET:{ params.tmr_dt[1] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
+          case CMD_STEPPER_POSITION_REP_DT_SET:{ params.tmr_dt[0] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
           
-          case (CMD_TASK + 256):{}break;
+          //case (CMD_TASK + 256):{}break;
           }//switch cmd
         }
       }  
