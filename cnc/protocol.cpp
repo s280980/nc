@@ -36,8 +36,8 @@ void protocol_process_input(){
       if(pr_bytes_wait==0){
         switch(pr_command){
           //case CMD_TASK:{}break;
-          case CMD_TASK_RUNNING_STATE_REP_DT_SET:{ params.tmr_dt[1] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
-          case CMD_STEPPER_POSITION_REP_DT_SET:{ params.tmr_dt[0] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
+          case CMD_TASK_RUNNING_STATE_REP_DT_SET:{ params.tmr_dt[TMR_REP_TASK_RUNNING_STATE] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
+          case CMD_STEPPER_POSITION_REP_DT_SET:{ params.tmr_dt[TMR_REP_ST_POSITION] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
           
           //case (CMD_TASK + 256):{}break;
           }//switch cmd

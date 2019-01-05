@@ -27,10 +27,10 @@ volatile uint8_t task_tail=0;
 
 uint32_t rep_st_position[NAXIS];
 void report_stepper_position(uint32_t ms_time){
-  if(!params.tmr_dt[0]){return; }
-  if(ms_time >= tmr_time[0] + params.tmr_dt[0]){
+  if(!params.tmr_dt[TMR_REP_ST_POSITION]){return; }
+  if(ms_time >= tmr_time[TMR_REP_ST_POSITION] + params.tmr_dt[TMR_REP_ST_POSITION]){
     uint8_t data;
-    tmr_time[0] = ms_time;
+    tmr_time[TMR_REP_ST_POSITION] = ms_time;
     for(uint8_t ax=0; ax<NAXIS; ax++){
       if(rep_st_position[ax] != st_position[ax]){
         rep_st_position[ax] = st_position[ax];
@@ -51,11 +51,11 @@ void report_stepper_position(uint32_t ms_time){
 uint8_t rep_task_id;
 int16_t rep_task_steps;
 void report_task_running_state(uint32_t ms_time){
-  if(!params.tmr_dt[TMR_REP_ST_POSITION]){ tmr_time[TMR_REP_ST_POSITION]=ms_time; return; }
+  if(!params.tmr_dt[TMR_REP_TASK_RUNNING_STATE]){ return; }
   task_t *t;
   t=task;
-  if(t && (ms_time - tmr_time[TMR_REP_ST_POSITION] >= params.tmr_dt[TMR_REP_ST_POSITION])){
-    tmr_time[TMR_REP_ST_POSITION] = ms_time;
+  if(t && (ms_time - tmr_time[TMR_REP_TASK_RUNNING_STATE] >= params.tmr_dt[TMR_REP_TASK_RUNNING_STATE])){
+    tmr_time[TMR_REP_TASK_RUNNING_STATE] = ms_time;
     if((t->id!=rep_task_id)||(t->steps!=rep_task_steps)){
       rep_task_id = t->id;
       rep_task_steps = t->steps;
