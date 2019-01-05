@@ -3,13 +3,10 @@
 #include "config.h"
 #include "stepper.h"
 #include "serial.h"
+#include "protocol.h"
 
 
-struct stepper_params_t{
-  uint8_t  stepbits_invert_mask;
-  uint16_t rate_min;
-  uint32_t st_inv_acc;
-  };
+
 static stepper_params_t params;  
 
 
@@ -26,6 +23,27 @@ task_t tasks[TASK_BUFFER_SIZE];
 task_t *task;
 uint8_t task_head=0;
 volatile uint8_t task_tail=0;
+
+
+uint8_t rep_task_id;
+int16_t rep_task_steps;
+void task_running_state(uint32_t ms_time){
+  if(!params.frep__task_running_state__dt){ return; }
+  task_t *t;
+  t=task;
+  if(t && (ms_time - params.frep__task_running_state__t >= params.frep__task_running_state__dt)){
+    params.frep__task_running_state__t = ms_time;
+    if((t->id!=rep_task_id)||(t->steps!=rep_task_steps)){
+      rep_task_id = t->id;
+      rep_task_steps = t->steps;
+      serial_write(CMD_TASK_RUNNING_STATE);
+      serial_write( (rep_task_id>>2) &127 );
+      serial_write( ((rep_task_id<<2) || (rep_task_steps>>14)) &127 );
+      serial_write( (rep_task_steps>>7) &127 );
+      serial_write( (rep_task_steps) &127);
+      }//if !=id
+    }
+  }//void
 
 
 task_t* task_reserve_cell(){
@@ -88,7 +106,7 @@ void stepper_start(){
 
 inline stepper_ocr1a_update(){
   //math rate...
-  if(task->steps>task->steps_acc){
+  if((task->steps>task->steps_acc) && (st_rate<task->rate)){
     if(st_mode!=ST_MODE_ACC){st_time=0; st_rate_start = st_rate; st_mode=ST_MODE_ACC;}
     st_time += st_dtime;
     st_rate = st_rate_start + st_time / params.st_inv_acc;
