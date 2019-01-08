@@ -23,6 +23,7 @@
 //nc-->pc
 #define CMD_TASK_RUNNING_STATE 135
 #define CMD_STEPPER_POSITION 136
+#define CMD_TASK_ACCEPTED 137
 
 
 //---------------------------------------------------------------------------
@@ -37,10 +38,9 @@ struct task_t{
   int16_t err[NAXIS];
   int16_t step[NAXIS]; // axis
   int16_t time; //time
-  int16_t steps; //step_count
-  int16_t steps_dec;
+  uint16_t steps; //step_count
+  uint16_t steps_dec;
   uint16_t rate;
-  uint8_t enable;
   };
 
 //---------------------------------------------------------------------------
@@ -104,6 +104,7 @@ public:
         void __fastcall on_task_running_state();
         void __fastcall stepper_position__rep_dt_set(uint16_t ms);
         void __fastcall task_send(task_t * task);
+        void __fastcall on_task_accepted();
 
 
 };

@@ -12,6 +12,7 @@
 //nc-->pc
 #define CMD_TASK_RUNNING_STATE 135
 #define CMD_STEPPER_POSITION 136
+#define CMD_TASK_ACCEPTED 137
 
 
 void protocol_process_input();

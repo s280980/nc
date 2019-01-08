@@ -29,8 +29,8 @@ struct task_t{
   int16_t err[NAXIS];
   int16_t step[NAXIS]; // axis
   int16_t time; //time
-  int16_t steps; //step_count
-  int16_t steps_dec;
+  uint16_t steps; //step_count
+  uint16_t steps_dec;
   uint16_t rate;
   };
 

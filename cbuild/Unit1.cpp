@@ -73,7 +73,6 @@ void __fastcall TForm1::Button1Click(TObject *Sender)
   if(port && (port->handle)){
     task_t t;
     t.id = 12;
-    t.enable=1;  //00000001,   10010101
     t.step[0] = 100;
     t.rate = 2699;
     t.dirbits = 1;

@@ -149,18 +149,43 @@ void __fastcall ComPortThread::Write(uint8_t data)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void __fastcall ComPortThread::on_task_accepted()
+{
+  uint8_t id = pr_buffer[0]<<7;
+  id |= pr_buffer[1];
+  Form1->Memo1->Lines->Add("task_accepted(), id="+String(id));
+}
 //---------------------------------------------------------------------------
 void __fastcall ComPortThread::task_send(task_t * task)
 {
+  uint16_t data;
   Write( CMD_TASK );
-  Write( (task->id>>1) &127 );
-  Write( ((task->id<<6) ) &127 );
-  //Write(  );
-  //Write(  );
-  //Write(  );
-  //Write(  );
-  //Write(  );
-  //Write(  );
+  Write( (task->id >> 4) &127 );//id8..id4      0
+  Write( ((task->id << 3)|(task->dirbits>>5)) &127 );//id3..id0,db7..db5   1
+  data = task->time;
+  Write( ((task->dirbits << 2)|(data>>14)) &127 );//db4..db0,d15..d14   2
+  Write( (data>>7) &127 );//d13..d7     3
+  Write( (data) &127 );//d6..d0         4
+  Write( (task->steps>>9) &127 );//s15..s9      5
+  Write( (task->steps>>2) &127 );//s8..s2       6
+  Write( ((task->steps<<5)|(task->steps_dec >> 11)) &127 );//s1..s0,sd15..sd11  7
+  Write( (task->steps_dec >> 4) &127 );//sd10..sd4      8
+  data = 0;
+  for(uint8_t ax=0; ax<8; ax++){ if(task->step[ax]!=0){data |= (((uint8_t)1) << ax);} }
+  Write( ((task->steps_dec << 3 )|(data >> 5)) &127 );//sd3..sd0,e7..e5         9
+  Write( ((data << 2)|(task->rate >> 14)) &127 );//e4..e0,r15..r14      10
+  Write( (task->rate >> 7) &127 );//r13..r7     11
+  Write( (task->rate) &127 );//r6..r0           12
+  for(uint8_t ax=0;ax<8;ax++)
+  {
+    if(task->step[ax]!=0)
+    {
+      data = task->step[ax];
+      Write( (data >> 14) &127 );
+      Write( (data >> 7) &127 );
+      Write( data &127 );
+    }
+  }
 }
 //---------------------------------------------------------------------------
 void __fastcall ComPortThread::on_link()
@@ -210,6 +235,7 @@ void __fastcall ComPortThread::Execute()
         case CMD_STEPPER_POSITION:{pr_bytes_wait=5;}break;
         case CMD_TASK_RUNNING_STATE:{pr_bytes_wait=4;}break;
         case CMD_LINK:{on_link();}break;
+        case CMD_TASK_ACCEPTED:{pr_bytes_wait=2;}break;
 
       }//switch
     }//if cmd
@@ -220,6 +246,7 @@ void __fastcall ComPortThread::Execute()
         switch(pr_command){
           case CMD_STEPPER_POSITION:{on_stepper_position();}break;
           case CMD_TASK_RUNNING_STATE:{on_task_running_state();}break;
+          case CMD_TASK_ACCEPTED:{on_task_accepted();}break;
 
         }//switch
       }//if wait==0
