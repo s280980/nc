@@ -51,7 +51,7 @@ void __fastcall TForm1::FormClose(TObject *Sender, TCloseAction &Action)
 void __fastcall TForm1::Timer1Timer(TObject *Sender)
 {
   fClose=true;
-  Close();
+  Close();   //test
 }
 //---------------------------------------------------------------------------
 
