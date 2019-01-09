@@ -71,13 +71,19 @@ void __fastcall TForm1::FormCloseQuery(TObject *Sender, bool &CanClose)
 void __fastcall TForm1::Button1Click(TObject *Sender)
 {
   if(port && (port->handle)){
+    Form1->Memo1->Lines->Add("button1Click");
     task_t t;
     t.id = 12;
+    for(uint8_t ax=0; ax<NAXIS; ax++)
+    {
+      t.step[ax]=0;
+    }
     t.step[0] = 100;
+    t.step[2] = 800;
     t.rate = 2699;
     t.dirbits = 1;
     t.steps = 10000;
-//    port->SendTask(&t);
+    port->task_send(&t);
   }//
 }
 //---------------------------------------------------------------------------

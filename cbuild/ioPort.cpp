@@ -160,10 +160,10 @@ void __fastcall ComPortThread::task_send(task_t * task)
   uint16_t data;
   Write( CMD_TASK );
   Write( task->id &127 );//id6..id0      0  , id=0..126
-  Write( ((task->dirbits>>1)) &127 );//db7..db1   1
+  Write( ((task->dirbits>>1)) &127 );//db7..db1                 1
   data = task->steps;
   Write( ((task->dirbits << 6)|(data>>10)) &127 );//db7,d15..d10   2
-  Write( (data>>3) &127 );//d9..d3     3
+  Write( (data>>3) &127 );//d9..d3                                 3
   Write( ((data<<4)|((task->steps_dec>>11)&15)) &127 );//d2..d0,sd14..sd11      4
   Write( (task->steps_dec >> 4) &127 );//sd10..sd4      5
   data = 0;
@@ -231,7 +231,7 @@ void __fastcall ComPortThread::Execute()
         case CMD_STEPPER_POSITION:{pr_bytes_wait=5;}break;
         case CMD_TASK_RUNNING_STATE:{pr_bytes_wait=4;}break;
         case CMD_LINK:{on_link();}break;
-        case CMD_TASK_ACCEPTED:{pr_bytes_wait=2;}break;
+        case CMD_TASK_ACCEPTED:{pr_bytes_wait=1;}break;
 
       }//switch
     }//if cmd
