@@ -13,9 +13,9 @@ uint8_t pr_bytes_wait = 0;
 
 void on_task(){
   //14bytes
-  if(pr_bytes_read==14){    
-    uint8_t enable = pr_buffer[9]<<5;
-    enable |= pr_buffer[10]>>2;
+  if(pr_bytes_read==10){    
+    uint8_t enable = pr_buffer[6]<<5;
+    enable |= pr_buffer[7]>>2;
     uint8_t n=0;
     for(uint8_t ax=0;ax<8;ax++){
       if(enable & (1 << ax)){ n++; }
@@ -27,16 +27,14 @@ void on_task(){
     task = task_reserve_cell();
     if(task){
       uint8_t data;
-      task->id = pr_buffer[0]<<4;
-      task->id |= pr_buffer[1]>>3;
-      uint8_t enable = pr_buffer[9]<<5;
-      enable |= pr_buffer[10]>>2;
+      task->id = pr_buffer[0];
+      uint8_t enable = pr_buffer[6]<<5;
+    enable |= pr_buffer[7]>>2;
 
       
       //task_apply(task);
       serial_write( CMD_TASK_ACCEPTED );
-      serial_write( (task->id>>7) &127 );
-      serial_write( task->id &127 );
+      serial_write( (task->id) &127 );      
       }//if task reserve
     }    
   }//void
@@ -58,7 +56,7 @@ void protocol_process_input(){
         case CMD_STEPPER_POSITION_REP_DT_SET:
         case CMD_TASK_RUNNING_STATE_REP_DT_SET:{pr_bytes_wait=2;}break;
         case CMD_RESET:{on_reset();}break;
-        case CMD_TASK:{pr_bytes_wait=14;}break;
+        case CMD_TASK:{pr_bytes_wait=10;}break;
         
         }//switch
       }

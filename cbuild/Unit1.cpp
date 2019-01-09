@@ -77,7 +77,6 @@ void __fastcall TForm1::Button1Click(TObject *Sender)
     t.rate = 2699;
     t.dirbits = 1;
     t.steps = 10000;
-    t.time = 10000;
 //    port->SendTask(&t);
   }//
 }
