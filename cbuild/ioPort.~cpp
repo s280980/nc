@@ -156,39 +156,23 @@ void __fastcall ComPortThread::on_task_accepted()
   Form1->Memo1->Lines->Add("task_accepted(), id="+String(id));
 }
 //---------------------------------------------------------------------------
-/*
-struct task_t{
-  uint8_t id;
-  uint8_t dirbits;
-  int16_t err[NAXIS];
-  int16_t step[NAXIS]; // axis
-  int16_t time; //time
-  uint16_t steps; //step_count
-  uint16_t steps_dec;
-  uint16_t rate;
-  uint8_t enable;
-  };
-*/
 void __fastcall ComPortThread::task_send(task_t * task)
 {
   uint16_t data;
   Write( CMD_TASK );
-  Write( (task->id >> 4) &127 );//id8..id4      0
-  Write( ((task->id << 3)|(task->dirbits>>5)) &127 );//id3..id0,db7..db5   1
-  data = task->time;
-  Write( ((task->dirbits << 2)|(data>>14)) &127 );//db4..db0,d15..d14   2
-  Write( (data>>7) &127 );//d13..d7     3
-  Write( (data) &127 );//d6..d0         4
-  Write( (task->steps>>9) &127 );//s15..s9      5
-  Write( (task->steps>>2) &127 );//s8..s2       6
-  Write( ((task->steps<<5)|(task->steps_dec >> 11)) &127 );//s1..s0,sd15..sd11  7
-  Write( (task->steps_dec >> 4) &127 );//sd10..sd4      8
+  Write( task->id &127 );//id6..id0      0  , id=0..126
+  Write( ((task->dirbits>>1)) &127 );//db7..db1   1
+  data = task->steps;
+  Write( ((task->dirbits << 6)|(data>>10)) &127 );//db7,d15..d10   2
+  Write( (data>>3) &127 );//d9..d3     3
+  Write( ((data<<4)|((task->steps_dec>>11)&15)) &127 );//d2..d0,sd14..sd11      4
+  Write( (task->steps_dec >> 4) &127 );//sd10..sd4      5
   data = 0;
   for(uint8_t ax=0; ax<8; ax++){ if(task->step[ax]!=0){data |= (((uint8_t)1) << ax);} }
-  Write( ((task->steps_dec << 3 )|(data >> 5)) &127 );//sd3..sd0,e7..e5         9
-  Write( ((data << 2)|(task->rate >> 14)) &127 );//e4..e0,r15..r14      10
-  Write( (task->rate >> 7) &127 );//r13..r7     11
-  Write( (task->rate) &127 );//r6..r0           12
+  Write( ((task->steps_dec << 3)|(data >> 5)) &127 );//sd3..sd0,e7..e5      6
+  Write( ((data << 2)|(task->rate >> 14)) &127 );//e4..e0,r15..r14      7
+  Write( (task->rate >> 7) &127 );//r13..r7     8
+  Write( (task->rate) &127 );//r6..r0           9
   for(uint8_t ax=0;ax<8;ax++)
   {
     if(task->step[ax]!=0)
