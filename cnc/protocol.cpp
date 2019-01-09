@@ -35,7 +35,7 @@ void on_task(){
       
       //task_apply(task);
       serial_write( CMD_TASK_ACCEPTED );
-      serial_write( pr_buffer[0] &127 );
+      serial_write( task->id &127 );
       
       }//if task reserve
     }    
