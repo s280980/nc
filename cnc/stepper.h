@@ -19,6 +19,7 @@ struct stepper_params_t{
   uint16_t rate_min;
   uint32_t st_inv_acc;
   uint16_t tmr_dt[TMR_COUNT];
+  uint32_t position[NAXIS];
   };
 
 
@@ -43,6 +44,8 @@ void task_apply(task_t* t);
 void tasks_execute();
 void report_task_running_state(uint32_t ms_time);
 void report_stepper_position(uint32_t ms_time);
+
+uint32_t stepper_position(uint8_t ax);
 
 extern stepper_params_t params;
 

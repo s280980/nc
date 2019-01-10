@@ -4,6 +4,7 @@
 #include "stepper.h"
 #include "serial.h"
 #include "protocol.h"
+#include "eeprom.h"
 
 
 
@@ -23,6 +24,11 @@ task_t tasks[TASK_BUFFER_SIZE];
 task_t *task;
 uint8_t task_head=0;
 volatile uint8_t task_tail=0;
+
+
+uint32_t stepper_position(uint8_t ax){
+  return st_position[ax];
+  }
 
 
 uint32_t rep_st_position[NAXIS];
@@ -209,10 +215,13 @@ void stepper_init(){
   TIMSK2 |= (1<<TOIE2); //enable  TIMER2_OVF_vect
 
 
-  params.st_inv_acc = 100;
-  params.rate_min = 50;
-  st_position[3]=17547;
-  st_position[1]=3452175477;
+  if(!memcpy_from_eeprom_with_checksum((uint8_t*)&params,0,sizeof(stepper_params_t))){
+    params.st_inv_acc = 100;
+    params.rate_min = 50;
+    for(uint8_t ax=0;ax<NAXIS;ax++){st_position[ax]=0;}
+    st_position[3]=17547;
+    st_position[1]=3452175477;
+    }
   }//stepper_init
 
 
@@ -221,4 +230,3 @@ void stepper_flush(){
   //
   sei();
   }  
-

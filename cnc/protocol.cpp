@@ -81,7 +81,7 @@ void protocol_process_input(){
         case CMD_TASK_RUNNING_STATE_REP_DT_SET:{pr_bytes_wait=2;}break;
         case CMD_RESET:{on_reset();}break;
         case CMD_TASK:{pr_bytes_wait=10;}break;
-        case CMD_WRITE_PARAMS_TO_EEPROM:{memcpy_to_eeprom_with_checksum(0,(uint8_t*)&params,sizeof(stepper_params_t));}break;
+        case CMD_WRITE_PARAMS_TO_EEPROM:{for(uint8_t ax=0;ax<NAXIS;ax++){params.position[ax]=stepper_position(ax);}memcpy_to_eeprom_with_checksum(0,(uint8_t*)&params,sizeof(stepper_params_t));}break;
         
         }//switch
       }
