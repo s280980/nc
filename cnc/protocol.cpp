@@ -3,6 +3,7 @@
 #include "serial.h"
 #include "protocol.h"
 #include "stepper.h"
+#include "eeprom.h"
 
 
 uint8_t pr_buffer[PROTOCOL_RX_BUFFER_SIZE];
@@ -12,8 +13,6 @@ uint8_t pr_bytes_wait = 0;
 
 
 void on_task(){
-  //14bytes
-  
   if(pr_bytes_read==10){    
     uint8_t enable = pr_buffer[6]<<5;
     enable |= pr_buffer[7]>>2;
@@ -41,7 +40,7 @@ void on_task(){
       task->steps_dec = steps;
       uint8_t enable = pr_buffer[6]<<5;
       enable |= pr_buffer[7]>>2;
-      task-rate = ((uint16_t)pr_buffer[7])<<14;
+      task->rate = ((uint16_t)pr_buffer[7])<<14;
       task->rate |= ((uint16_t)pr_buffer[8])<<7;
       task->rate |= ((uint16_t)pr_buffer[9]);
       uint8_t num=10;
@@ -60,15 +59,14 @@ void on_task(){
         serial_write( CMD_TASK_ACCEPTED );
         serial_write( task->id &127 );
         }
-            
       }//if task reserve
     }    
   }//void
 
 
-
 void on_reset(){
   }
+
 
 
 void protocol_process_input(){
@@ -83,6 +81,7 @@ void protocol_process_input(){
         case CMD_TASK_RUNNING_STATE_REP_DT_SET:{pr_bytes_wait=2;}break;
         case CMD_RESET:{on_reset();}break;
         case CMD_TASK:{pr_bytes_wait=10;}break;
+        case CMD_WRITE_PARAMS_TO_EEPROM:{memcpy_to_eeprom_with_checksum(0,(uint8_t*)&params,sizeof(stepper_params_t));}break;
         
         }//switch
       }
