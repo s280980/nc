@@ -3,13 +3,11 @@
 #include "serial.h"
 #include "protocol.h"
 #include "stepper.h"
-#include "limits.h"
 
 
 void setup(){
   serial_init();
   stepper_init();
-  limits_init();
   //params.tmr_dt[TMR_REP_ST_POSITION]=1000;
   }//setup
 
