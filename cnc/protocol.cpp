@@ -29,14 +29,38 @@ void on_task(){
     if(task){
       uint8_t data;
       task->id = pr_buffer[0];
+      task->dirbits = (pr_buffer[1]<<1) | (pr_buffer[2]>>6);
+      uint16_t steps = ((uint16_t)pr_buffer[2])<<10;
+      steps |= ((uint16_t)pr_buffer[3])<<3;
+      steps |= ((uint16_t)pr_buffer[4]>>4);
+      task->steps = steps;
+      task->time = steps;
+      steps = ((uint16_t)pr_buffer[4]&15)<<11;
+      steps |= ((uint16_t)pr_buffer[5])<<4;
+      steps |= ((uint16_t)pr_buffer[6]>>3);
+      task->steps_dec = steps;
       uint8_t enable = pr_buffer[6]<<5;
       enable |= pr_buffer[7]>>2;
-
-      
+      task-rate = ((uint16_t)pr_buffer[7])<<14;
+      task->rate |= ((uint16_t)pr_buffer[8])<<7;
+      task->rate |= ((uint16_t)pr_buffer[9]);
+      uint8_t num=10;
+      while(num<pr_bytes_read){
+        for(uint8_t ax=0;ax<NAXIS;ax++){
+          task->err[ax]=0;
+          if((1<<ax)&enable){
+            task->step[ax] = ((uint16_t)pr_buffer[num++])<<14;
+            task->step[ax] |= ((uint16_t)pr_buffer[num++])<<7;
+            task->step[ax] |= ((uint16_t)pr_buffer[num++]);
+            }else{task->step[ax]=0;}
+          }
+        }//while
       //task_apply(task);
-      serial_write( CMD_TASK_ACCEPTED );
-      serial_write( task->id &127 );
-      
+      if(num==pr_bytes_read){
+        serial_write( CMD_TASK_ACCEPTED );
+        serial_write( task->id &127 );
+        }
+            
       }//if task reserve
     }    
   }//void
