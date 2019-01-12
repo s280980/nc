@@ -20,4 +20,5 @@ void loop(){
   protocol_process_input();
   //report_task_running_state(millis());
   report_stepper_position(millis());
+  report_nc_mode_state(millis());
   }//loop

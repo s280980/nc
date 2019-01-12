@@ -8,6 +8,13 @@
 #define ST_MODE_DEC 3
 
 
+#define NC_MODE_STOPPED 0
+#define NC_MODE_AUTO 1
+#define NC_MODE_JOG 2
+#define NC_MODE_MPG 3
+#define NC_MODE_HOME 4
+
+
 struct frep_time_t{
   uint32_t t;
   uint32_t dt;
@@ -44,6 +51,7 @@ void task_apply(task_t* t);
 void tasks_execute();
 void report_task_running_state(uint32_t ms_time);
 void report_stepper_position(uint32_t ms_time);
+void report_nc_mode_state(uint32_t ms_time);
 
 uint32_t stepper_position(uint8_t ax);
 

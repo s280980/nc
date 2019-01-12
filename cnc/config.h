@@ -12,7 +12,8 @@
 
 #define TMR_REP_ST_POSITION 0
 #define TMR_REP_TASK_RUNNING_STATE 1
-#define TMR_COUNT 2
+#define TMR_REP_NC_MODE_STATE 2
+#define TMR_COUNT 3
 
 #if defined(__AVR_ATmega644P__) || defined(__AVR_ATmega2560__)
   #define NAXIS 8

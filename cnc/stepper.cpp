@@ -18,6 +18,7 @@ static volatile uint32_t st_dtime;
 static volatile uint32_t st_time;
 volatile uint32_t st_position[NAXIS];
 uint8_t st_mode;
+uint8_t nc_mode;
 
 
 task_t tasks[TASK_BUFFER_SIZE];
@@ -71,6 +72,19 @@ void report_task_running_state(uint32_t ms_time){
       serial_write( (rep_task_steps>>7) &127 );
       serial_write( (rep_task_steps) &127);
       }//if !=id
+    }
+  }//void
+
+uint8_t rep_nc_mode;
+void report_nc_mode_state(uint32_t ms_time){
+  if(!params.tmr_dt[TMR_REP_NC_MODE_STATE]){ return; }
+  if(ms_time-tmr_time[TMR_REP_NC_MODE_STATE] >= params.tmr_dt[TMR_REP_NC_MODE_STATE]){
+    tmr_time[TMR_REP_NC_MODE_STATE] = ms_time;
+    if(rep_nc_mode != nc_mode){
+      rep_nc_mode = nc_mode;
+      serial_write(CMD_NC_MODE_STATE);
+      serial_write(rep_nc_mode &127);      
+      }
     }
   }//void
 
@@ -222,6 +236,10 @@ void stepper_init(){
     st_position[3]=17547;
     st_position[1]=3452175477;
     }
+
+  st_mode = ST_MODE_STOPPED;
+  nc_mode = NC_MODE_STOPPED;
+    
   }//stepper_init
 
 
