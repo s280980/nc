@@ -2,10 +2,12 @@
 #include <stdint.h>
 #include "config.h"
 
+
 #define ST_MODE_STOPPED 0
 #define ST_MODE_ACC 1
 #define ST_MODE_CRUISE 2
 #define ST_MODE_DEC 3
+#define ST_MODE_RUNNING 4
 
 
 #define NC_MODE_STOPPED 0
@@ -43,6 +45,11 @@ struct task_t{
   };
 
 
+void on_steppers_disable();
+void on_steppers_enable();
+void on_nc_mode_change(uint8_t new_mode);
+
+
 void stepper_init();
 void stepper_stop();
 
@@ -51,7 +58,6 @@ void task_apply(task_t* t);
 void tasks_execute();
 void report_task_running_state(uint32_t ms_time);
 void report_stepper_position(uint32_t ms_time);
-void report_nc_mode_state(uint32_t ms_time);
 
 uint32_t stepper_position(uint8_t ax);
 

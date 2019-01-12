@@ -75,17 +75,12 @@ void report_task_running_state(uint32_t ms_time){
     }
   }//void
 
-uint8_t rep_nc_mode;
-void report_nc_mode_state(uint32_t ms_time){
-  if(!params.tmr_dt[TMR_REP_NC_MODE_STATE]){ return; }
-  if(ms_time-tmr_time[TMR_REP_NC_MODE_STATE] >= params.tmr_dt[TMR_REP_NC_MODE_STATE]){
-    tmr_time[TMR_REP_NC_MODE_STATE] = ms_time;
-    if(rep_nc_mode != nc_mode){
-      rep_nc_mode = nc_mode;
-      serial_write(CMD_NC_MODE_STATE);
-      serial_write(rep_nc_mode &127);      
-      }
-    }
+
+void on_nc_mode_change(uint8_t new_mode){
+  if(st_rate != 0){return;}
+  nc_mode = new_mode;
+  serial_write(CMD_MODE_STATE);
+  serial_write(nc_mode &127);
   }//void
 
 
@@ -133,17 +128,29 @@ inline stepper_task_update(){
 
 
 void stepper_stop(){
-  //stepper_synchronize();
-  TIMSK1 &= ~(1<<OCIE1A);
-  STEPPERS_DISABLE_PORT |= 1<<STEPPERS_DISABLE_BIT;  
+  TIMSK1 &= ~(1<<OCIE1A);  
   st_rate = 0;
   st_mode = ST_MODE_STOPPED;
   }
 
   
 void stepper_start(){
-  STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT);
+  st_mode = ST_MODE_RUNNING;
   TIMSK1 |= (1<<OCIE1A);  
+  }
+
+
+void on_steppers_enable(){
+  STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT);
+  serial_write(CMD_STEPPERS_SWITCH_STATE);
+  serial_write(1);
+  }
+
+
+void on_steppers_disable(){
+  STEPPERS_DISABLE_PORT |= 1<<STEPPERS_DISABLE_BIT;  
+  serial_write(CMD_STEPPERS_SWITCH_STATE);
+  serial_write(0);
   }
 
 
@@ -175,6 +182,7 @@ inline stepper_ocr1a_update(){
 
 
 void tasks_execute(){
+  if(nc_mode != NC_MODE_AUTO){return;}
   st_rate = params.rate_min;
   stepper_task_update();
   if(task){
@@ -186,16 +194,21 @@ void tasks_execute(){
 
 
 ISR(TIMER1_COMPA_vect){
-  STEP_PORT = st_stepbits;
-  sei();
-  TCNT2=0;  TCCR2B = (1<<CS01);  
-  stepper_task_update();
-  if(task){    
-    stepper_stepbits_update();    
-    stepper_ocr1a_update();
-  }else{
-    stepper_stop();
-    }
+  switch(nc_mode){
+    case NC_MODE_AUTO:{
+      STEP_PORT = st_stepbits;
+      sei();
+      TCNT2=0;  TCCR2B = (1<<CS01);
+      stepper_task_update();
+      if(task){
+        stepper_stepbits_update();
+        stepper_ocr1a_update();
+        }else{stepper_stop();}
+      }break;
+    case NC_MODE_JOG:{}break;
+    case NC_MODE_MPG:{}break;
+    case NC_MODE_HOME:{}break;  
+    }//switch
   }//ISR
 
 
