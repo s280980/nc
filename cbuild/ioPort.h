@@ -14,16 +14,22 @@
 //---------------------------------------------------------------------------
 //pc-->nc
 #define CMD_LINK 128
+#define CMD_WRITE_PARAMS_TO_EEPROM 133
 #define CMD_RESET 134
 #define CMD_TASK_RUNNING_STATE_REP_DT_SET 135
 #define CMD_STEPPER_POSITION_REP_DT_SET 136
 #define CMD_TASK 137
+#define CMD_MODE 138
+#define CMD_STEPPERS 139
 
 
 //nc-->pc
+//+#define CMD_LINK 128
 #define CMD_TASK_RUNNING_STATE 135
 #define CMD_STEPPER_POSITION 136
 #define CMD_TASK_ACCEPTED 137
+#define CMD_MODE_STATE 138
+#define CMD_STEPPERS_STATE 139
 
 
 //---------------------------------------------------------------------------
@@ -105,6 +111,13 @@ public:
         void __fastcall stepper_position__rep_dt_set(uint16_t ms);
         void __fastcall task_send(task_t * task);
         void __fastcall on_task_accepted();
+        void __fastcall on_nc_mode_change();
+        void __fastcall on_steppers_state();
+        void __fastcall nc_reset();
+        void __fastcall nc_link();
+        void __fastcall nc_write_params_to_eeprom();
+        void __fastcall nc_steppers(bool st_enable);
+        void __fastcall nc_mode(uint8_t mode_set);
 
 
 };

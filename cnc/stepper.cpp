@@ -142,14 +142,14 @@ void stepper_start(){
 
 void on_steppers_enable(){
   STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT);
-  serial_write(CMD_STEPPERS_SWITCH_STATE);
+  serial_write(CMD_STEPPERS_STATE);
   serial_write(1);
   }
 
 
 void on_steppers_disable(){
   STEPPERS_DISABLE_PORT |= 1<<STEPPERS_DISABLE_BIT;  
-  serial_write(CMD_STEPPERS_SWITCH_STATE);
+  serial_write(CMD_STEPPERS_STATE);
   serial_write(0);
   }
 

@@ -144,10 +144,44 @@ void __fastcall ComPortThread::Write(uint8_t data)
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------
+void __fastcall ComPortThread::nc_mode(uint8_t mode_set)
+{
+  Write(CMD_MODE);
+  Write(mode_set &127);
+}
 //---------------------------------------------------------------------------
+void __fastcall ComPortThread::nc_steppers(bool st_enable)
+{
+  Write(CMD_STEPPERS);
+  if(st_enable){Write(1);}else{Write(0);}
+}
 //---------------------------------------------------------------------------
+void __fastcall ComPortThread::nc_write_params_to_eeprom()
+{
+  Write(CMD_WRITE_PARAMS_TO_EEPROM);
+}
 //---------------------------------------------------------------------------
+void __fastcall ComPortThread::nc_reset()
+{
+  Write(CMD_RESET);
+}
 //---------------------------------------------------------------------------
+void __fastcall ComPortThread::nc_link()
+{
+  Write(CMD_LINK);
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::on_steppers_state()
+{
+  uint8_t st_enable = pr_buffer[0];
+  Form1->Memo1->Lines->Add("steppers_state(), st_enable="+String(st_enable));
+}
+//---------------------------------------------------------------------------
+void __fastcall ComPortThread::on_nc_mode_change()
+{
+  uint8_t new_mode = pr_buffer[0];
+  Form1->Memo1->Lines->Add("mode_change(), mode="+String(new_mode));
+}
 //---------------------------------------------------------------------------
 void __fastcall ComPortThread::on_task_accepted()
 {
@@ -231,7 +265,10 @@ void __fastcall ComPortThread::Execute()
         case CMD_STEPPER_POSITION:{pr_bytes_wait=5;}break;
         case CMD_TASK_RUNNING_STATE:{pr_bytes_wait=4;}break;
         case CMD_LINK:{on_link();}break;
+        case CMD_MODE_STATE:
+        case CMD_STEPPERS_STATE:
         case CMD_TASK_ACCEPTED:{pr_bytes_wait=1;}break;
+
 
       }//switch
     }//if cmd
@@ -243,6 +280,8 @@ void __fastcall ComPortThread::Execute()
           case CMD_STEPPER_POSITION:{on_stepper_position();}break;
           case CMD_TASK_RUNNING_STATE:{on_task_running_state();}break;
           case CMD_TASK_ACCEPTED:{on_task_accepted();}break;
+          case CMD_MODE_STATE:{on_nc_mode_change();}break;
+          case CMD_STEPPERS_STATE:{on_steppers_state();}break;
 
         }//switch
       }//if wait==0

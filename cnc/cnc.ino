@@ -10,7 +10,6 @@ void setup(){
   serial_init();
   stepper_init();
   io_init();
-  //params.tmr_dt[TMR_REP_ST_POSITION]=1000;
   }//setup
 
 
