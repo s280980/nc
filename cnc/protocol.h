@@ -10,6 +10,7 @@
 #define CMD_TASK 137
 #define CMD_MODE 138
 #define CMD_STEPPERS 139
+#define CMD_AXIS 140
 
 
 //nc-->pc
@@ -19,6 +20,7 @@
 #define CMD_TASK_ACCEPTED 137
 #define CMD_MODE_STATE 138
 #define CMD_STEPPERS_STATE 139
+//+#define CMD_AXIS 140
 
 
 void protocol_process_input();

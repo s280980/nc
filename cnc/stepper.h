@@ -3,6 +3,16 @@
 #include "config.h"
 
 
+#define JOG_KEY_DOWN 1
+#define JOG_KEY_UP 2
+
+
+#define TMR_REP_ST_POSITION 0
+#define TMR_REP_TASK_RUNNING_STATE 1
+#define TMR_REP_NC_MODE_STATE 2
+#define TMR_COUNT 3
+
+
 #define ST_MODE_STOPPED 0
 #define ST_MODE_ACC 1
 #define ST_MODE_CRUISE 2
@@ -26,6 +36,7 @@ struct frep_time_t{
 struct stepper_params_t{
   uint8_t  stepbits_invert_mask;
   uint16_t rate_min;
+  uint16_t rate_max[NAXIS];
   uint32_t st_inv_acc;
   uint16_t tmr_dt[TMR_COUNT];
   uint32_t position[NAXIS];
@@ -48,10 +59,12 @@ struct task_t{
 void on_steppers_disable();
 void on_steppers_enable();
 void on_nc_mode_change(uint8_t new_mode);
+void on_axis(uint8_t ax);
 
 
 void stepper_init();
 void stepper_stop();
+void stepper_loop();
 
 task_t* task_reserve_cell();
 void task_apply(task_t* t);

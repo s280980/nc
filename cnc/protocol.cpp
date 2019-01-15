@@ -83,6 +83,7 @@ void protocol_process_input(){
         case CMD_TASK:{pr_bytes_wait=10;}break;
         case CMD_WRITE_PARAMS_TO_EEPROM:{for(uint8_t ax=0;ax<NAXIS;ax++){params.position[ax]=stepper_position(ax);}memcpy_to_eeprom_with_checksum(0,(uint8_t*)&params,sizeof(stepper_params_t));}break;
         case CMD_STEPPERS:
+        case CMD_AXIS:
         case CMD_MODE:{pr_bytes_wait=1;}break;
         
         }//switch
@@ -97,6 +98,7 @@ void protocol_process_input(){
           case CMD_STEPPER_POSITION_REP_DT_SET:{ params.tmr_dt[TMR_REP_ST_POSITION] = (((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]; }break;
           case CMD_MODE:{on_nc_mode_change(pr_buffer[0]);}break;
           case CMD_STEPPERS:{if(pr_buffer[0]==1){on_steppers_enable();}else{on_steppers_disable();}}break;
+          case CMD_AXIS:{on_axis(pr_buffer[0]);}break;
           
           //case (CMD_TASK + 256):{}break;
           }//switch cmd

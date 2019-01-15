@@ -14,17 +14,68 @@ uint32_t tmr_time[TMR_COUNT];
 volatile uint16_t st_rate;
 static volatile uint16_t st_rate_start;
 static volatile uint8_t st_stepbits;
+static volatile uint8_t st_dirbits;
 static volatile uint32_t st_dtime;
 static volatile uint32_t st_time;
 volatile uint32_t st_position[NAXIS];
 uint8_t st_mode;
 uint8_t nc_mode;
 
+uint16_t jog_key_press=0;
+uint8_t jog_axis=0;
+
 
 task_t tasks[TASK_BUFFER_SIZE];
 task_t *task;
 uint8_t task_head=0;
 volatile uint8_t task_tail=0;
+
+
+void on_axis(uint8_t ax){
+  if(st_rate==0){jog_axis = ax;}
+  serial_write(CMD_AXIS);
+  serial_write(jog_axis);
+  }//void
+
+
+void stepper_stop(){
+  TIMSK1 &= ~(1<<OCIE1A);  
+  st_rate = 0;
+  st_mode = ST_MODE_STOPPED;
+  }
+
+  
+void stepper_start(){
+  st_mode = ST_MODE_RUNNING;
+  TIMSK1 |= (1<<OCIE1A);  
+  }
+
+
+void stepper_stepdirbits_ocr1a_update_jog_mode(){
+  uint8_t bt = 1 << jog_axis;
+  switch(jog_key_press){
+    case JOG_KEY_DOWN:{}break;
+    case JOG_KEY_UP:{}break;
+    }//switch
+  st_stepbits |= bt;
+  st_stepbits ^= params.stepbits_invert_mask;
+  st_dirbits &bt){st_position[jog_axis]--;}else{st_position[jog_axis]++;}
+  }//void
+
+
+void stepper_loop(){
+  switch(nc_mode){
+    case NC_MODE_JOG:{
+      if(jog_key_press && (!st_rate)){
+        stepper_stepdirbits_ocr1a_update_jog_mode();
+        stepper_start();
+        }      
+      }break; //nc_mode_jog
+    case NC_MODE_MPG:{
+      
+      }break;//nc_mode_mpg
+    }//switch
+  }//void
 
 
 uint32_t stepper_position(uint8_t ax){
@@ -127,19 +178,6 @@ inline stepper_task_update(){
   }//inline task_update()
 
 
-void stepper_stop(){
-  TIMSK1 &= ~(1<<OCIE1A);  
-  st_rate = 0;
-  st_mode = ST_MODE_STOPPED;
-  }
-
-  
-void stepper_start(){
-  st_mode = ST_MODE_RUNNING;
-  TIMSK1 |= (1<<OCIE1A);  
-  }
-
-
 void on_steppers_enable(){
   STEPPERS_DISABLE_PORT &= ~(1<<STEPPERS_DISABLE_BIT);
   serial_write(CMD_STEPPERS_STATE);
@@ -205,7 +243,14 @@ ISR(TIMER1_COMPA_vect){
         stepper_ocr1a_update();
         }else{stepper_stop();}
       }break;
-    case NC_MODE_JOG:{}break;
+    case NC_MODE_JOG:{
+      DIRECTION_PORT = st_dirbits;
+      STEP_PORT = st_stepbits;
+      sei();
+      TCNT2=0;  TCCR2B = (1 << CS01);
+      stepper_stepbits_update_jog_mode();
+      stepper_ocr1a_update_jog_mode();
+      }break;
     case NC_MODE_MPG:{}break;
     case NC_MODE_HOME:{}break;  
     }//switch
