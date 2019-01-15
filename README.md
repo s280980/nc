@@ -1,2 +1,1 @@
-# nc
-__AVR_ATmega2560__
+# nc __AVR_ATmega2560__
