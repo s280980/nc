@@ -23,6 +23,7 @@ uint8_t nc_mode;
 
 uint16_t jog_key_press=0;
 uint8_t jog_axis=0;
+uint16_t jog_rate_max[NAXIS];
 
 
 task_t tasks[TASK_BUFFER_SIZE];
@@ -31,10 +32,20 @@ uint8_t task_head=0;
 volatile uint8_t task_tail=0;
 
 
+void jog_key_click(uint8_t key){
+  if(nc_mode==NC_MODE_JOG){jog_key_press=key;}else{jog_key_press=0;}
+  }//void
+
+
 void on_axis(uint8_t ax){
   if(st_rate==0){jog_axis = ax;}
   serial_write(CMD_AXIS);
   serial_write(jog_axis);
+  }//void
+
+
+void on_jog_rate_max(uint16_t rate_max){
+  jog_rate_max[jog_axis] = rate_max;
   }//void
 
 
@@ -47,19 +58,37 @@ void stepper_stop(){
   
 void stepper_start(){
   st_mode = ST_MODE_RUNNING;
+  st_dtime = 0;
   TIMSK1 |= (1<<OCIE1A);  
   }
 
 
-void stepper_stepdirbits_ocr1a_update_jog_mode(){
-  uint8_t bt = 1 << jog_axis;
-  switch(jog_key_press){
-    case JOG_KEY_DOWN:{}break;
-    case JOG_KEY_UP:{}break;
-    }//switch
-  st_stepbits |= bt;
-  st_stepbits ^= params.stepbits_invert_mask;
-  st_dirbits &bt){st_position[jog_axis]--;}else{st_position[jog_axis]++;}
+inline stepper_stepbits_update_jog_mode(){
+  }//void
+  
+inline stepper_ocr1a_update_jog_mode(){
+  if(st_rate==0){
+    if(jog_key_press==0){stepper_stop();}else{
+      st_mode=ST_MODE_ACC;
+      st_time=0;
+      st_rate_start=0;
+      }
+    }//if rate==0
+  else{//if else == if rate!=0
+
+    if((jog_key_press==0)&&(st_mode!=ST_MODE_DEC)){
+      st_mode = ST_MODE_DEC;
+      st_time=0;
+      st_rate_start = st_rate;
+      }
+    else if(jog_key_press==JOG_KEY_LEFT){
+      
+      }
+    else if(jog_key_press==JOG_KEY_RIGHT){
+      
+      }  
+    
+    }//if else == if rate!=0
   }//void
 
 
@@ -67,7 +96,8 @@ void stepper_loop(){
   switch(nc_mode){
     case NC_MODE_JOG:{
       if(jog_key_press && (!st_rate)){
-        stepper_stepdirbits_ocr1a_update_jog_mode();
+        stepper_stepbits_update_jog_mode();
+        stepper_ocr1a_update_jog_mode();
         stepper_start();
         }      
       }break; //nc_mode_jog

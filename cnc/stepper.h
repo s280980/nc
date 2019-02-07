@@ -3,8 +3,8 @@
 #include "config.h"
 
 
-#define JOG_KEY_DOWN 1
-#define JOG_KEY_UP 2
+#define JOG_KEY_LEFT 1
+#define JOG_KEY_RIGHT 2
 
 
 #define TMR_REP_ST_POSITION 0
@@ -60,6 +60,7 @@ void on_steppers_disable();
 void on_steppers_enable();
 void on_nc_mode_change(uint8_t new_mode);
 void on_axis(uint8_t ax);
+void on_jog_rate_max(uint16_t rate_max);
 
 
 void stepper_init();
@@ -73,6 +74,9 @@ void report_task_running_state(uint32_t ms_time);
 void report_stepper_position(uint32_t ms_time);
 
 uint32_t stepper_position(uint8_t ax);
+
+void jog_key_click(uint8_t key);
+
 
 extern stepper_params_t params;
 

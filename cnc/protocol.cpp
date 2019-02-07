@@ -78,6 +78,7 @@ void protocol_process_input(){
       switch(pr_command){
         case CMD_LINK:{serial_write(CMD_LINK);}break;
         case CMD_STEPPER_POSITION_REP_DT_SET:
+        case CMD_JOG_RATE_MAX:
         case CMD_TASK_RUNNING_STATE_REP_DT_SET:{pr_bytes_wait=2;}break;
         case CMD_RESET:{on_reset();}break;
         case CMD_TASK:{pr_bytes_wait=10;}break;
@@ -99,6 +100,7 @@ void protocol_process_input(){
           case CMD_MODE:{on_nc_mode_change(pr_buffer[0]);}break;
           case CMD_STEPPERS:{if(pr_buffer[0]==1){on_steppers_enable();}else{on_steppers_disable();}}break;
           case CMD_AXIS:{on_axis(pr_buffer[0]);}break;
+          case CMD_JOG_RATE_MAX:{on_jog_rate_max((((uint16_t)pr_buffer[0])<<7) | pr_buffer[1]);}break;
           
           //case (CMD_TASK + 256):{}break;
           }//switch cmd

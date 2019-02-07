@@ -11,6 +11,7 @@
 #define CMD_MODE 138
 #define CMD_STEPPERS 139
 #define CMD_AXIS 140
+#define CMD_JOG_RATE_MAX 141
 
 
 //nc-->pc
