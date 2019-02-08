@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <avr/interrupt.h>
+#include <Arduino.h>
 #include "config.h"
 #include "stepper.h"
 #include "serial.h"
@@ -33,7 +34,7 @@ volatile uint8_t task_tail=0;
 
 
 void jog_key_click(uint8_t key){
-  if(nc_mode==NC_MODE_JOG){jog_key_press=key;}else{jog_key_press=0;}
+  if(nc_mode==NC_MODE_JOG){jog_key_press=key;tmr_time[TMR_JOG_KEY_PRESS]=millis();}else{jog_key_press=0;}
   }//void
 
 
@@ -64,31 +65,45 @@ void stepper_start(){
 
 
 inline stepper_stepbits_update_jog_mode(){
+  st_stepbits = 1<<jog_axis;
+  st_stepbits ^= params.stepbits_invert_mask;
   }//void
   
 inline stepper_ocr1a_update_jog_mode(){
-  if(st_rate==0){
-    if(jog_key_press==0){stepper_stop();}else{
+  if((st_rate<=params.rate_min) && (jog_key_press==0)){stepper_stop();return;}
+  bool dir = st_dirbits & (1<<jog_axis);
+  bool f1 = (jog_key_press==JOG_KEY_LEFT)&& !dir;
+  bool f2 = (jog_key_press==JOG_KEY_RIGHT)&& dir;
+  bool f3 = st_rate<jog_rate_max[jog_axis];
+  bool f4 = (jog_key_press==JOG_KEY_LEFT)&& dir;
+  bool f5 = (jog_key_press==JOG_KEY_RIGHT)&& !dir;
+  if( (f1 || f2) && f3 ){    
+    //if dir==jog_keyPress
+    if(st_mode!=ST_MODE_ACC){
       st_mode=ST_MODE_ACC;
-      st_time=0;
-      st_rate_start=0;
-      }
-    }//if rate==0
-  else{//if else == if rate!=0
-
-    if((jog_key_press==0)&&(st_mode!=ST_MODE_DEC)){
-      st_mode = ST_MODE_DEC;
       st_time=0;
       st_rate_start = st_rate;
       }
-    else if(jog_key_press==JOG_KEY_LEFT){
-      
-      }
-    else if(jog_key_press==JOG_KEY_RIGHT){
-      
-      }  
-    
-    }//if else == if rate!=0
+    st_time+=st_dtime;
+    st_rate=st_rate_start+st_time/params.st_inv_acc;
+    st_dtime = 250000/st_rate;
+    OCR1A = st_dtime;  
+    }    
+  else if(f4 || f5 || (jog_key_press==0)){
+    if(st_rate>params.rate_min){
+      if(st_mode!=ST_MODE_DEC){
+        st_mode=ST_MODE_DEC;
+        st_time=0;
+        st_rate_start = st_rate;
+        }
+      uint16_t tmp = st_time / params.st_inv_acc;
+      if(st_rate_start-params.rate_min>tmp){
+        st_rate = st_rate_start - tmp;
+        }else{st_rate=params.rate_min;}
+      st_dtime = 250000/st_rate;
+      OCR1A = st_dtime;
+      }else{stepper_stop();}
+    }//if dit!= || !key
   }//void
 
 
@@ -96,10 +111,14 @@ void stepper_loop(){
   switch(nc_mode){
     case NC_MODE_JOG:{
       if(jog_key_press && (!st_rate)){
+        if(jog_key_press==JOG_KEY_RIGHT){st_dirbits |= (1<<jog_axis);}else{st_dirbits=0;}
         stepper_stepbits_update_jog_mode();
         stepper_ocr1a_update_jog_mode();
         stepper_start();
-        }      
+        } 
+      if(st_rate&&(millis()>=tmr_time[TMR_JOG_KEY_PRESS]+params.tmr_dt[TMR_JOG_KEY_PRESS])){        
+        jog_key_press=0;
+      }       
       }break; //nc_mode_jog
     case NC_MODE_MPG:{
       
