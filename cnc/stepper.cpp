@@ -19,6 +19,7 @@ static volatile uint8_t st_dirbits;
 static volatile uint32_t st_dtime;
 static volatile uint32_t st_time;
 volatile uint32_t st_position[NAXIS];
+volatile uint32_t mpg_position;
 uint8_t st_mode;
 uint8_t nc_mode;
 
@@ -39,7 +40,7 @@ void jog_key_click(uint8_t key){
 
 
 void on_axis(uint8_t ax){
-  if(st_rate==0){jog_axis = ax;}
+  if(st_rate==0){jog_axis = ax; mpg_position = st_position[ax];}
   serial_write(CMD_AXIS);
   serial_write(jog_axis);
   }//void
@@ -68,7 +69,8 @@ inline stepper_stepbits_update_jog_mode(){
   st_stepbits = 1<<jog_axis;
   st_stepbits ^= params.stepbits_invert_mask;
   }//void
-  
+
+
 inline stepper_ocr1a_update_jog_mode(){
   if((st_rate<=params.rate_min) && (jog_key_press==0)){stepper_stop();return;}
   bool dir = st_dirbits & (1<<jog_axis);
@@ -107,6 +109,10 @@ inline stepper_ocr1a_update_jog_mode(){
   }//void
 
 
+inline stepper_ocr1a_update_mpg_mode(){
+  }//void
+
+
 void stepper_loop(){
   switch(nc_mode){
     case NC_MODE_JOG:{
@@ -121,7 +127,13 @@ void stepper_loop(){
       }       
       }break; //nc_mode_jog
     case NC_MODE_MPG:{
-      
+      if((!st_rate) && (mpg_position != st_position[jog_axis])){
+        st_dirbits=0;
+        if(mpg_position<st_position[jog_axis]){st_dirbits |= (1<<jog_axis);}
+        stepper_stepbits_update_jog_mode();
+        stepper_ocr1a_update_mpg_mode();
+        stepper_start();
+        }//if rate==0
       }break;//nc_mode_mpg
     }//switch
   }//void
@@ -300,7 +312,14 @@ ISR(TIMER1_COMPA_vect){
       stepper_stepbits_update_jog_mode();
       stepper_ocr1a_update_jog_mode();
       }break;
-    case NC_MODE_MPG:{}break;
+    case NC_MODE_MPG:{
+      DIRECTION_PORT = st_dirbits;
+      STEP_PORT = st_stepbits;
+      sei();
+      TCNT2=0;  TCCR2B = (1 << CS01);
+      stepper_stepbits_update_jog_mode();
+      stepper_ocr1a_update_mpg_mode();
+      }break;
     case NC_MODE_HOME:{}break;  
     }//switch
   }//ISR
